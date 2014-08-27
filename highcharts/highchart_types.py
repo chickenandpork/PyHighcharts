@@ -337,11 +337,11 @@ class SeriesOptions(object):
 		return self.__dict__
 
 	def __display_options__(self):
-		print json.dumps(self.__options__(),indent=4,sort_keys=True)
+		print((json.dumps(self.__options__(),indent=4,sort_keys=True)))
 
 	def process_kwargs(self,kwargs,series_type,supress_errors=False):
 		allowed_args = PLOT_OPTION_ALLOWED_ARGS[series_type]
-		for k, v in kwargs.items():
+		for k, v in list(kwargs.items()):
 			if k in allowed_args:
 				if SeriesOptions.__validate_options__(k,v,allowed_args[k]):
 					self.__dict__.update({k:v})
@@ -373,7 +373,7 @@ class Series(object):
 			"data": data,
 			"type": series_type,
 			})
-		for k, v in kwargs.items():
+		for k, v in list(kwargs.items()):
 			if k in DATA_SERIES_ALLOWED_OPTIONS:
 				if SeriesOptions.__validate_options__(k,v,DATA_SERIES_ALLOWED_OPTIONS[k]):
 					self.__dict__.update({k:v})

@@ -7,8 +7,7 @@ Common Functions For PyHighcharts
 FORMATTER_TYPE_MAPPINGS = {
     "default": "function() { return this.value }",
     "date": "function() { return''+Highcharts.dateFormat('%e. %b %Y %H:%M:%S',this.x) + ': '+ this.y; }",
-    "pie": "function() { return '<b>'+ this.point.name +'</b>: '+ \
-    this.percentage +' %'; }",
+    "pie": "function() { return '<b>'+ this.point.name +'</b>: '+ this.percentage +' %'; }",
     "pound_yAxis": "function() { '&#163' + return this.value }",
     "pound_tooltip": "function() { return''+ this.x + ': '+ '&#163' +this.y; }",
     "percent": "function() { return this.value + ' %' }",
@@ -123,7 +122,7 @@ class Formatter(object):
 
 
 def path_to_array(path):
-    print path
+    print(path)
     path = path.replace(r'/([A-Za-z])/g', r' $1 ')
     path = path.replace(r'/^\s*/', "").replace(r'/\s*$/', "")
     path = path.split(" ");
@@ -142,4 +141,4 @@ class Event(object):
         self.event_method = event_method
 
 if __name__ == '__main__':
-    print path_to_array("M 4687 2398 L 4679 2402 4679 2398 Z")
+    print((path_to_array("M 4687 2398 L 4679 2402 4679 2398 Z")))

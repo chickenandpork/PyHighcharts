@@ -7,8 +7,8 @@ except ImportError:
         import simplejson as json
 
 
-from highchart_types import OptionTypeError, Series, SeriesOptions
-from common import Formatter, Event
+from .highchart_types import OptionTypeError, Series, SeriesOptions
+from .common import Formatter, Event
 
 
 
@@ -21,20 +21,20 @@ class BaseOptions(object):
         self.update_dict(**kwargs)
 
     def __display_options__(self):
-        print json.dumps(self.__dict__,indent=4,sort_keys=True)
+        print((json.dumps(self.__dict__,indent=4,sort_keys=True)))
 
     def __validate_options__(self,k,v,ov):
         if ov == NotImplemented: 
             raise OptionTypeError("Option Type Currently Not Supported: %s" % k)
         if isinstance(v,dict) and isinstance(ov,dict):
-            keys = v.keys()
+            keys = list(v.keys())
             if len(keys) > 1: 
                 raise NotImplementedError
             return isinstance(v[keys[0]],ov[keys[0]])
         return isinstance(v, ov) 
 
     def update_dict(self,**kwargs):
-        for k, v in kwargs.items(): 
+        for k, v in list(kwargs.items()): 
             k = k.split("_")
             if k[0] in self.ALLOWED_OPTIONS:
                 if isinstance(self.ALLOWED_OPTIONS[k[0]],dict):
@@ -46,21 +46,21 @@ class BaseOptions(object):
                                 self.__dict__.update({k[0]:{}})
                             self.__dict__[k[0]].update({k[1]:v})
                         else: 
-                            print k, v
+                            print((k, v))
                             raise OptionTypeError("Option Type Mismatch: Expected: %s" % self.ALLOWED_OPTIONS[k[0]][k[1]]) 
                 else:
                     if self.__validate_options__(k[0],v,self.ALLOWED_OPTIONS[k[0]]) or not v:
                         if isinstance(v,dict) and isinstance(self.ALLOWED_OPTIONS[k[0]],dict):
-                            self.__dict__.update({k[0]:{v[v.keys()[0]]:v.values()[0]}})
+                            self.__dict__.update({k[0]:{v[list(v.keys())[0]]:list(v.values())[0]}})
                         else:
                             self.__dict__.update({k[0]:v})
                     else:
-                        print k, v, self.ALLOWED_OPTIONS
+                        print((k, v, self.ALLOWED_OPTIONS))
                         raise OptionTypeError("Option Type Mismatch: Expected: %s" % self.ALLOWED_OPTIONS[k[0]])
             else:
-                print self.ALLOWED_OPTIONS
-                print self.__name__
-                print k, v
+                print((self.ALLOWED_OPTIONS))
+                print((self.__name__))
+                print((k, v))
                 raise OptionTypeError("Not An Accepted Option Type: %s" % k[0])
 
     def __getattr__(self,item):

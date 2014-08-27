@@ -1,7 +1,4 @@
-$(function () {{
-  var chart;
-  $(document).ready(function () {{
-    chart = new Highcharts.Chart({{
+$('#{renderTo}').highcharts({{
         chart: {chart},
         colors: {colors},
         credits: {credits},
@@ -19,7 +16,5 @@ $(function () {{
         title: {title},
         tooltip: {tooltip},
         xAxis: {xAxis},
-        yAxis: {yAxis},
-    }});
-  }});
+        yAxis: {yAxis}
 }});

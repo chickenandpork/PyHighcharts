@@ -15,12 +15,11 @@ from PyHighcharts.highcharts.options import ChartOptions, \
 
 from PyHighcharts.highcharts.highchart_types import Series, SeriesOptions, HighchartsError, MultiAxis
 from PyHighcharts.highcharts.common import Formatter
-
+from collections import Iterable
 
 
 # Stdlib Imports
 import datetime, random, webbrowser, os, inspect
-from _abcoll import Iterable
 
 global TMP_DIR
 TMP_DIR = "/tmp/highcharts_tmp/"
@@ -67,7 +66,7 @@ def update_template(tmp, key, val, tab_depth=1):
         # Value Checking
         if isinstance(val, dict):
             tmp += "\t%s: {\n" % key
-            for subkey, subval in val.items():
+            for subkey, subval in list(val.items()):
                 tmp = update_template(tmp, subkey, subval, tab_depth=3)
             tmp += "\t\t" + "},\n"
             return tmp
@@ -76,7 +75,7 @@ def update_template(tmp, key, val, tab_depth=1):
             for item in val:
                 if isinstance(item, dict):
                     ntmp = "{"
-                    for k,v in item.items():
+                    for k,v in list(item.items()):
                         ntmp = update_template(ntmp, k, v, tab_depth=0)
                     ntmp += "}"
                     new_vals.append(ntmp)
@@ -146,7 +145,7 @@ def update_template(tmp, key, val, tab_depth=1):
             tmp += "\t"*tab_depth + "%s: %s,\n" % (key, val.formatter)
         elif FORMAT_SPECIAL_CASES[key] == "multiaxis":
             st = ""
-            for k, v in val.__dict__.iteritems():
+            for k, v in list(val.__dict__.items()):
                 st = update_template(st, k, v, tab_depth=tab_depth+1)
             return st
         else:
@@ -158,7 +157,7 @@ def series_formatter(data):
     temp = ""
     for data_set in data['data']:
         temp += "{\n"
-        for key, val in  data_set.__dict__.items():
+        for key, val in  list(data_set.__dict__.items()):
             temp = update_template(temp, key, val, tab_depth=1)    
         temp += "\t},"
     return temp
@@ -172,7 +171,6 @@ def chart_formatter(option_type, data):
         "series": series_formatter,
     }
     tmp = ""
-    #print option_type, data
     if option_type in special_cases:
         tmp += special_cases[option_type](data)
     elif option_type == "yAxis" and data.get('axis'):
@@ -182,18 +180,18 @@ def chart_formatter(option_type, data):
             if not i == len(data['axis']):
                 tmp += "\t},{\n"
         tmp += "\t}]"
-        print tmp
+        print(tmp)
     else:
         tmp += "{\n" 
-        for key, val in data.items():
+        for key, val in list(data.items()):
             if isinstance(val, dict):
                 tmp += "\t%s: {\n" % key
-                for subkey, subval in val.items():
+                for subkey, subval in list(val.items()):
                     tmp = update_template(tmp, subkey, subval, tab_depth=3)
                 tmp += "\t\t" + "},\n"
             elif isinstance(val, SeriesOptions):
                 tmp += "\t%s: {\n" % key
-                for subkey, subval in val.__dict__.items():
+                for subkey, subval in list(val.__dict__.items()):
                     tmp = update_template(tmp, subkey, subval, tab_depth=3)
                 tmp += "\t\t" + "},\n"
             else:
@@ -254,8 +252,10 @@ class Highchart(object):
                     self.options['chart'].update_dict(**{'events':{kwargs['events'].event_type:kwargs['events'].event_method}})
                 else:
                     self.options['chart'].update_dict(**{keyword:kwargs[keyword]})
-        # Some Extra Vals to store: 
+
+        # Some Extra Vals to store:
         self.data_set_count = 0
+
 
 
     def __render__(self, ret=False, template="base"):
@@ -263,15 +263,16 @@ class Highchart(object):
             TEMPLATE = BASE_TEMPLATE
         elif template == "gecko":
             TEMPLATE = GECKO_TEMPLATE
-        with open(TEMPLATE,"rb") as template_file:
+        with open(TEMPLATE,"r") as template_file:
             tmp = template_file.read()
-        rendered = tmp.format(**self.__export_options__())
-        if ret: 
+        rendered = tmp.replace("{renderTo}", self.options['chart'].renderTo)
+        rendered = rendered.format(**self.__export_options__())
+        if ret:
             return rendered
 
 
     def __export_options__(self):
-        bind = self.options.items()
+        bind = list(self.options.items())
         data = {k:chart_formatter(k, opClass.__dict__) \
             for k, opClass in bind}
         return data
@@ -295,7 +296,7 @@ class Highchart(object):
     def colors(self, colors=None):
         """ Bind Color Array """
         if not colors:
-            return self.options["colors"].__dict__.values() if self.options['colors'] is not None else []
+            return list(self.options["colors"].__dict__.values()) if self.options['colors'] is not None else []
         else:
             self.options["colors"].set_colors(colors)
 
@@ -328,7 +329,7 @@ class Highchart(object):
         if not self.options['plotOptions'].__dict__: 
             self.hold_point_start = formatted_date
             self.hold_point_interval = DEFAULT_POINT_INTERVAL
-        hold_iterable = self.options['plotOptions'].__dict__.items()
+        hold_iterable = list(self.options['plotOptions'].__dict__.items())
         for series_type, series_options in hold_iterable:
             series_options.process_kwargs({'pointStart':formatted_date},
                 series_type=series_type)
@@ -351,12 +352,12 @@ class Highchart(object):
             self.hold_point_interval = None
         if not self.options['plotOptions'].__dict__: 
             self.hold_point_interval = interval
-        for hold_item in self.options['plotOptions'].__dict__.items():
+        for hold_item in list(self.options['plotOptions'].__dict__.items()):
             series_type, series_options = hold_item
             series_options.process_kwargs({'pointInterval':interval},
                 series_type=series_type)
         if not self.start_date_set:
-            print "Set The Start Date With .set_start_date(date)"
+            print("Set The Start Date With .set_start_date(date)")
 
 
     def add_data_set(self, data, series_type="line", name=None, **kwargs):
@@ -383,20 +384,20 @@ class Highchart(object):
     def set_options(self, options, force_options=False):
         """ Set Plot Options """
         if force_options:
-            for k, v in options.items():
+            for k, v in list(options.items()):
                 self.options.update({k:v})
         else:
             new_options = {}
-            for key, option_data in options.items():
+            for key, option_data in list(options.items()):
                 data = {}
-                for key2, val in option_data.items():
+                for key2, val in list(option_data.items()):
                     if isinstance(val, dict):
-                        for key3, val2 in val.items():    
+                        for key3, val2 in list(val.items()):    
                             data.update({key2+"_"+key3:val2})
                     else:   
                         data.update({key2:val})
                 new_options.update({key:data})
-            for key, val in new_options.items():
+            for key, val in list(new_options.items()):
                 self.options[key].update_dict(**val)
 
 
@@ -410,10 +411,10 @@ class Highchart(object):
         if not temp_dir[-1] == "/":
             temp_dir += "/"
         new_fn = temp_dir + new_filename
-        with open(SHOW_TEMPLATE, 'rb') as file_open:
+        with open(SHOW_TEMPLATE, 'r') as file_open:
             tmp = file_open.read()
         html = tmp.format(chart_data=self.__render__(ret=True))
-        with open(new_fn, 'wb') as file_open:
+        with open(new_fn, 'w') as file_open:
             file_open.write(html)
         handle.open("file://"+new_fn)
 
@@ -424,7 +425,7 @@ class Highchart(object):
 
 
     def set_yAxis(self, *axis):
-        if all(map(lambda a: isinstance(a, yAxisOptions), axis)):
+        if all([isinstance(a, yAxisOptions) for a in axis]):
             self.options['yAxis'] = MultiAxis(axis)
         else:
             raise HighchartsError("All Axis Must Be Of Type: yAxisOptions")

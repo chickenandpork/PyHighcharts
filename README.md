@@ -35,7 +35,7 @@ This Highcharts codebase was primarily developed for use within templating: And 
 
 All you need to do is pass in the highcharts pre-generated with the generate() function to your templates within some script tags (And don't forget to correctly name the id's of the divs!)
 
-## Currently Supoorts
+## Currently Supports
 
 - Line
 - Spline

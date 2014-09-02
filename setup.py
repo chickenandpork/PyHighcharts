@@ -4,7 +4,6 @@ from distutils.core import setup
 
 setup(name='PyHighcharts',
 	version='1.0',
-	#py_modules=['foo'],
 	description='A convenient wrapper for Highchart generation procedurally or on the command-line to browser output',
 	long_description='A convenient wrapper for Highchart generation procedurally or on the command-line to browser output.\n\n'+
 	'For documentation on highcharts visit: http://api.highcharts.com/highcharts (Highcharts API)\n\n'+
@@ -13,7 +12,6 @@ setup(name='PyHighcharts',
 	author='Findlay Yeates',
 	author_email='fidyeates@exeter.ac.uk.unconfirmed',
 	url='https://github.com/fidyeates/PyHighcharts',
-	packages=['highcharts','highcharts.ref'],
-	#py_modules=['highcharts.chart','highcharts.ref'],
-	#package_dir={'highcharts': 'highcharts'},
+	packages=['PyHighcharts','PyHighcharts.highcharts','PyHighcharts.highcharts.ref'],
+	package_dir={'PyHighcharts': ''},
 	)
